@@ -27,7 +27,6 @@ jobs:
           mkdir -p bin
           javac -d bin src/ATMManagement.java
 
-      - name: Run ATMManagement with multiple inputs
+      - name: Run ATMManagement with test inputs
         run: |
-          # Replace the input string below with your actual inputs
-          echo -e "1234" | java -cp bin ATMManagement
+          echo -e "1234\n1\n2\n100\n3\n200\n4\n1234\n5678\n5" | java -cp bin ATMManagement
