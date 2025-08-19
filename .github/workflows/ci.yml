@@ -1,4 +1,4 @@
-name: Java ATMManagement Test
+name: Java ATMManagement CI/CD
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  run-atm-management:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,11 +22,34 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Compile Java code
+      - name: Cache Maven Dependencies (optional, for future use)
+        # Remove if not using Maven or Gradle
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Compile Java source files
         run: |
           mkdir -p bin
-          javac -d bin src/ATMManagement.java
+          javac -d bin src/**/*.java
 
-      - name: Run ATMManagement with test inputs
+      - name: Run simulation test
         run: |
           echo -e "1234\n1\n2\n100\n3\n200\n4\n1234\n5678\n5" | java -cp bin ATMManagement
+
+      - name: Run JUnit Tests (if you add tests)
+        # Make sure to add test classes in src/test/ directory
+        run: |
+          # Compile test classes
+          javac -cp ".:junit-platform-console-standalone.jar" -d bin src/test/*.java
+          # Run tests with assertions
+          java -jar junit-platform-console-standalone.jar --scan-classpath bin
+
+      - name: Static code analysis with Checkstyle
+        run: |
+          wget -O checkstyle.jar https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.3/checkstyle-10.12.3-all.jar
+          # Use Google Checks style; you can replace with your preferred config
+          java -jar checkstyle.jar -c /google_checks.xml src/**/*.java
